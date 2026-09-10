@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desafío Integrador de Métodos Numéricos</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f7fb;color:#182230;font-family:Segoe UI,Arial,sans-serif;line-height:1.55}
+.container{max-width:1200px;margin:auto;padding:28px 16px 55px}
+.header{background:linear-gradient(135deg,#173b76,#2563eb);color:#fff;border-radius:20px;padding:30px;margin-bottom:22px;box-shadow:0 10px 30px #18223018}
+.header h1{margin:0 0 6px;font-size:30px}.header p{margin:0;opacity:.9}
+.section{background:#fff;border:1px solid #dce3ec;border-radius:18px;padding:25px;margin-bottom:22px;box-shadow:0 8px 25px #1e325012}
+.title{display:flex;align-items:center;gap:10px;margin-bottom:16px}.num{width:34px;height:34px;border-radius:10px;background:#e8f0ff;color:#2563eb;display:grid;place-items:center;font-weight:700}.title h2{margin:0;font-size:21px}
+.problem{background:#f7faff;border-left:5px solid #2563eb;border-radius:12px;padding:18px}
+.problem p{margin:10px 0}
+.eq,.formula{font-family:Consolas,monospace;background:#fff;border:1px solid #e1e8f0;border-radius:9px;padding:11px 14px;margin:9px 0;overflow:auto}
+.layout{display:grid;grid-template-columns:1.25fr .75fr;gap:20px}.panel{border:1px solid #dce3ec;border-radius:15px;padding:19px}.panel h3{margin:0 0 8px}
+.muted{font-size:13px;color:#657286}
+.inputs{display:grid;grid-template-columns:1fr 180px;gap:18px;margin-top:15px}
+.matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.matrix input,.vector input{width:100%;padding:10px;border:1px solid #dce3ec;border-radius:8px;text-align:center;font:14px Consolas}
+.vector{display:grid;gap:8px}
+.live{margin-top:15px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;padding:13px}.live b{font-size:12px}.live div{font:13px Consolas;line-height:1.9}
+.buttons{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}.btn{border:0;border-radius:9px;padding:10px 15px;font-weight:700;cursor:pointer;background:#2563eb;color:#fff}.btn.green{background:#059669}.btn.purple{background:#7c3aed}.btn.gray{background:#e9eef5;color:#263449}.btn:hover{filter:brightness(.94)}
+.error{display:none;margin-top:12px;background:#fff1f2;border:1px solid #fecdd3;color:#9f1239;padding:10px;border-radius:9px;font-size:13px}
+.method{border:1px solid #dce3ec;border-radius:11px;padding:13px;margin:9px 0}.badge{font-size:10px;font-weight:800;padding:3px 7px;border-radius:99px;background:#e8f0ff;color:#1d4ed8}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;border-bottom:1px solid #dce3ec;padding-bottom:12px;margin-bottom:18px}.tab{border:0;border-radius:9px;padding:9px 14px;font-weight:700;background:#f1f5f9;color:#475569;cursor:pointer}.tab.active{background:#dbeafe;color:#1d4ed8}.hidden{display:none!important}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px}.stat{background:#f8fafc;border:1px solid #dce3ec;border-radius:10px;padding:13px}.stat small{display:block;color:#657286}.stat strong{font-size:19px}
+.solution{background:#f8fafc;border:1px solid #dce3ec;border-radius:11px;padding:15px;margin-bottom:15px}.solgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.x{background:#fff;border:1px solid #dce3ec;border-radius:8px;padding:9px;font:15px Consolas}
+.chart{border:1px solid #dce3ec;border-radius:13px;overflow:hidden}.chart h3{font-size:15px;margin:0;padding:14px 15px 0}.chart canvas{display:block;width:100%;height:285px}
+.lu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.matrixbox{background:#f8fafc;border:1px solid #dce3ec;border-radius:10px;padding:13px}.matrixbox h3{font-size:13px;margin:0 0 7px}.matrixbox pre{margin:0;font:12px Consolas;line-height:1.7;white-space:pre-wrap}
+.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{border:1px solid #dce3ec;padding:10px;text-align:center}.table th{background:#f1f5f9}.table td:first-child{text-align:left;font-weight:700}
+.chart3d{margin-top:18px;border:1px solid #dce3ec;border-radius:14px;overflow:hidden}.chart3dhead{padding:16px;border-bottom:1px solid #dce3ec;display:flex;justify-content:space-between;gap:15px}.chart3dhead h3{margin:0;font-size:17px}.chart3dhead p{margin:3px 0 0;font-size:12px;color:#657286}
+.legend{display:flex;gap:9px;flex-wrap:wrap;font-size:11px;color:#475569}.legend span{white-space:nowrap}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}.d1{background:#2563eb}.d2{background:#059669}.d3{background:#ea580c}.ds{background:#7c3aed}
+.canvas3d{height:500px;background:#f8fafc}.canvas3d canvas{width:100%;height:100%;display:block;cursor:grab}
+.controls{padding:10px 14px;border-top:1px solid #dce3ec;font-size:11px;color:#657286;display:flex;gap:10px;align-items:center}
+.taylor-inputs{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:15px}
+.taylor-inputs input{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;margin-top:6px;font-size:15px}
+.examples{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:14px}.examples button{border:0;border-radius:8px;padding:8px 11px;background:#64748b;color:white;cursor:pointer}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.result{padding:17px;background:#f8fafc;border:1px solid #e1e7ef;border-radius:12px;text-align:center}.result strong{display:block;font-size:23px;color:#173b67;margin-top:7px}
+.taylor-chart{height:430px;border:1px solid #e1e7ef;border-radius:13px;background:#fff;overflow:hidden}.taylor-chart canvas{width:100%;height:100%;display:block}
+.note{background:#fff7df;border-left:4px solid #eab308;padding:15px;border-radius:8px}
+.error-table td,.error-table th{text-align:center}
+.conclusion{background:linear-gradient(135deg,#eef5ff,#f8fafc);border-left:5px solid #2563eb;padding:18px;border-radius:12px}
+.conclusion p{margin:9px 0}
+@media(max-width:800px){.layout,.inputs,.taylor-inputs{grid-template-columns:1fr}.stats,.solgrid,.lu,.result-grid{grid-template-columns:1fr}.chart3dhead{flex-direction:column}.canvas3d{height:410px}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+<h1>Desafío Integrador de Métodos Numéricos</h1>
+<p>Teoría de errores · Series de Taylor · Sistemas de ecuaciones lineales · Jacobi · Gauss-Seidel · LU</p>
+</div>
+
+<div class="section">
+<div class="title"><div class="num">1</div><h2>Teoría de Errores</h2></div>
+<div class="problem">
+<p>La empresa compara valores financieros de referencia con valores registrados. Calcula el error absoluto, relativo y porcentual para cada dato.</p>
+<div style="overflow-x:auto">
+<table class="table error-table">
+<thead><tr><th>Dato financiero</th><th>Valor de referencia (Bs)</th><th>Valor registrado (Bs)</th><th>Error absoluto</th><th>Error relativo</th><th>Error porcentual</th></tr></thead>
+<tbody>
+<tr><td>Ingreso diario</td><td>12500</td><td>12420</td><td id="ea1">—</td><td id="er1">—</td><td id="ep1">—</td></tr>
+<tr><td>Costo operativo</td><td>7800</td><td>7860</td><td id="ea2">—</td><td id="er2">—</td><td id="ep2">—</td></tr>
+<tr><td>Utilidad estimada</td><td>4700</td><td>4560</td><td id="ea3">—</td><td id="er3">—</td><td id="ep3">—</td></tr>
+</tbody>
+</table>
+</div>
+<div class="buttons"><button class="btn" id="btnErrores">Calcular errores</button></div>
+<div class="note" id="errorInterpretacion">Presiona «Calcular errores» para obtener la interpretación.</div>
+</div>
+</div>
+
+<div class="section">
+<div class="title"><div class="num">2</div><h2>Aproximación mediante Taylor</h2></div>
+<div class="problem">
+<p><strong>Problema propuesto:</strong> Una empresa dispone de un capital de <strong>10.000 Bs</strong> y ofrece una tasa de crecimiento continuo del <strong>8% anual</strong>. El valor futuro está dado por:</p>
+<div class="formula">V(t) = 10.000 e<sup>0.08t</sup></div>
+<p>Para el problema inicial se aproxima el valor para <strong>t = 5</strong> años mediante una serie de Taylor centrada en <strong>a = 0</strong>, usando inicialmente orden <strong>n = 5</strong>.</p>
+</div>
+
+<p>Los datos vienen precargados, pero puedes cambiar la función, el punto de expansión, el punto de evaluación y el orden para resolver otros ejercicios.</p>
+<div class="taylor-inputs">
+<div><label>Función f(x)</label><input id="func" value="exp(x)"></div>
+<div><label>Punto de expansión a</label><input id="ta" type="number" value="0" step="any"></div>
+<div><label>Punto a evaluar x</label><input id="tx" type="number" value="0.4" step="any"></div>
+<div><label>Orden n</label><input id="tn" type="number" value="5" min="0" max="15" step="1"></div>
+</div>
+<div class="buttons">
+<button class="btn green" id="btnTaylor">Resolver Taylor</button>
+<button class="btn gray" id="btnTaylorReset">Restablecer problema</button>
+</div>
+<div class="examples">
+<strong>Ejemplos:</strong>
+<button data-f="exp(x)" data-a="0" data-x="0.4" data-n="5">eˣ</button>
+<button data-f="sin(x)" data-a="0" data-x="1" data-n="5">sen(x)</button>
+<button data-f="cos(x)" data-a="0" data-x="1" data-n="6">cos(x)</button>
+<button data-f="log(x)" data-a="1" data-x="1.5" data-n="5">ln(x)</button>
+<button data-f="1/(1+x)" data-a="0" data-x="0.5" data-n="6">1/(1+x)</button>
+</div>
+</div>
+
+<div class="section">
+<div class="title"><div class="num">3</div><h2>Serie de Taylor y resultados</h2></div>
+<div class="formula" style="text-align:center">
+P<sub>n</sub>(x) = Σ [ f<sup>(k)</sup>(a) / k! ] (x − a)<sup>k</sup>
+</div>
+<div class="formula" id="taylorFormula">P₅(x) = —</div>
+<div class="result-grid">
+<div class="result">Valor exacto<strong id="texacto">—</strong></div>
+<div class="result">Aproximación<strong id="taprox">—</strong></div>
+<div class="result">Error porcentual<strong id="terror">—</strong></div>
+</div>
+<br>
+<div class="result-grid">
+<div class="result">Error absoluto<strong id="terrorAbs">—</strong></div>
+<div class="result">Error relativo<strong id="terrorRel">—</strong></div>
+<div class="result">Términos<strong id="tterminos">—</strong></div>
+</div>
+</div>
+
+<div class="section">
+<div class="title"><div class="num">4</div><h2>Gráfica dinámica de Taylor</h2></div>
+<p>La gráfica muestra la función original, el polinomio de Taylor y los puntos de expansión y evaluación. Al cambiar los datos y resolver, la gráfica se actualiza.</p>
+<div class="taylor-chart"><canvas id="taylorCanvas"></canvas></div>
+<div class="legend" style="margin-top:10px">
+<span><i class="dot d1"></i>Función original</span>
+<span><i class="dot d2"></i>Polinomio de Taylor</span>
+<span><i class="dot" style="background:#dc2626"></i>Punto de evaluación</span>
+<span><i class="dot" style="background:#f59e0b"></i>Punto de expansión</span>
+</div>
+</div>
+
+<div class="section">
+<div class="title"><div class="num">5</div><h2>Cálculo término por término</h2></div>
+<div style="overflow-x:auto">
+<table class="table">
+<thead><tr><th>k</th><th>f⁽ᵏ⁾(a)</th><th>Término</th><th>Suma parcial</th></tr></thead>
+<tbody id="ttabla"></tbody>
+</table>
+</div>
+<div class="note" id="tinterpretacion">Resuelve el ejercicio para ver la interpretación.</div>
+</div>
+
+<div class="section">
+<div class="title"><div class="num">6</div><h2>Sistemas de ecuaciones lineales</h2></div>
+<div class="problem">
+<p><strong>Contexto financiero:</strong> Una empresa de inversión necesita distribuir $100,000 entre tres fondos mutuos. Basándose en análisis de rentabilidad y restricciones de riesgo:</p>
+<div class="eq">4x₁ − 0.5x₂ − 0.5x₃ = 8</div>
+<div class="eq">−0.5x₁ + 3x₂ − 0.3x₃ = 6</div>
+<div class="eq">−0.5x₁ − 0.3x₂ + 4x₃ = 10</div>
+<p>Donde x₁, x₂ y x₃ representan miles de dólares invertidos en cada fondo.</p>
+</div>
+</div>
+
+<div class="section">
+<div class="title"><div class="num">7</div><h2>Entrada y resolución</h2></div>
+<div class="layout">
+<div class="panel">
+<h3>Sistema editable</h3>
+<div class="muted">Puedes cambiar cualquier coeficiente y el vector b. Los botones funcionan directamente sin depender de bibliotecas externas.</div>
+<div class="inputs">
+<div><p class="muted"><b>Matriz A</b></p><div class="matrix">
+<input id="a11" type="number" value="4" step="any"><input id="a12" type="number" value="-0.5" step="any"><input id="a13" type="number" value="-0.5" step="any">
+<input id="a21" type="number" value="-0.5" step="any"><input id="a22" type="number" value="3" step="any"><input id="a23" type="number" value="-0.3" step="any">
+<input id="a31" type="number" value="-0.5" step="any"><input id="a32" type="number" value="-0.3" step="any"><input id="a33" type="number" value="4" step="any">
+</div></div>
+<div><p class="muted"><b>Vector b</b></p><div class="vector">
+<input id="b1" type="number" value="8" step="any"><input id="b2" type="number" value="6" step="any"><input id="b3" type="number" value="10" step="any">
+</div></div>
+</div>
+<div class="live"><b>Sistema actual</b><div id="eqs"></div></div>
+<div class="buttons">
+<button class="btn green" id="btnAll">Resolver todo</button>
+<button class="btn" id="btnJ">Jacobi</button>
+<button class="btn" id="btnG">Gauss-Seidel</button>
+<button class="btn purple" id="btnL">LU</button>
+<button class="btn gray" id="btnReset">Restaurar</button>
+</div>
+<div class="error" id="sysError"></div>
+</div>
+<div class="panel">
+<h3>Métodos utilizados</h3>
+<div class="method"><span class="badge">ITERATIVO</span><p><b>Jacobi:</b> actualiza todas las variables usando los valores de la iteración anterior.</p></div>
+<div class="method"><span class="badge">ITERATIVO</span><p><b>Gauss-Seidel:</b> utiliza inmediatamente los valores nuevos calculados.</p></div>
+<div class="method"><span class="badge">DIRECTO</span><p><b>LU:</b> descompone la matriz A en L y U y resuelve mediante sustitución.</p></div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<div class="title"><div class="num">8</div><h2>Resultados de los métodos</h2></div>
+<div class="tabs">
+<button id="tj" class="tab active">Jacobi</button>
+<button id="tg" class="tab">Gauss-Seidel</button>
+<button id="tl" class="tab">LU</button>
+<button id="tc" class="tab">Comparación</button>
+</div>
+
+<div id="vj">
+<div class="stats"><div class="stat"><small>Iteraciones</small><strong id="ji">—</strong></div><div class="stat"><small>Error final</small><strong id="je">—</strong></div><div class="stat"><small>Tiempo</small><strong id="jt">—</strong></div></div>
+<div class="solution"><b>Solución aproximada</b><div class="solgrid"><div class="x">x₁ = <b id="jx1">—</b></div><div class="x">x₂ = <b id="jx2">—</b></div><div class="x">x₃ = <b id="jx3">—</b></div></div></div>
+<div class="chart"><h3>Convergencia de Jacobi</h3><canvas id="cj"></canvas></div>
+</div>
+
+<div id="vg" class="hidden">
+<div class="stats"><div class="stat"><small>Iteraciones</small><strong id="gi">—</strong></div><div class="stat"><small>Error final</small><strong id="ge">—</strong></div><div class="stat"><small>Tiempo</small><strong id="gt">—</strong></div></div>
+<div class="solution"><b>Solución aproximada</b><div class="solgrid"><div class="x">x₁ = <b id="gx1">—</b></div><div class="x">x₂ = <b id="gx2">—</b></div><div class="x">x₃ = <b id="gx3">—</b></div></div></div>
+<div class="chart"><h3>Convergencia de Gauss-Seidel</h3><canvas id="cg"></canvas></div>
+</div>
+
+<div id="vl" class="hidden">
+<div class="stats"><div class="stat"><small>Operaciones</small><strong id="lo">—</strong></div><div class="stat"><small>Error residual</small><strong id="le">—</strong></div><div class="stat"><small>Tiempo</small><strong id="lt">—</strong></div></div>
+<div class="solution"><b>Solución</b><div class="solgrid"><div class="x">x₁ = <b id="lx1">—</b></div><div class="x">x₂ = <b id="lx2">—</b></div><div class="x">x₃ = <b id="lx3">—</b></div></div></div>
+<div class="lu"><div class="matrixbox"><h3>Matriz P</h3><pre id="pm">—</pre></div><div class="matrixbox"><h3>Matriz L</h3><pre id="lm">—</pre></div><div class="matrixbox"><h3>Matriz U</h3><pre id="um">—</pre></div></div>
+</div>
+
+<div id="vc" class="hidden">
+<table class="table"><thead><tr><th>Aspecto</th><th>Jacobi</th><th>Gauss-Seidel</th><th>LU</th></tr></thead>
+<tbody>
+<tr><td>Tipo</td><td>Iterativo</td><td>Iterativo</td><td>Directo</td></tr>
+<tr><td>Iteraciones / operaciones</td><td id="c1">—</td><td id="c2">—</td><td id="c3">—</td></tr>
+<tr><td>Error</td><td id="c4">—</td><td id="c5">—</td><td id="c6">—</td></tr>
+</tbody></table>
+</div>
+
+<div class="chart3d">
+<div class="chart3dhead"><div><h3>Gráfica 3D — Intersección de los planos</h3><p>Las tres ecuaciones son planos. El punto morado representa la solución del sistema.</p></div>
+<div class="legend"><span><i class="dot d1"></i>Ecuación 1</span><span><i class="dot d2"></i>Ecuación 2</span><span><i class="dot d3"></i>Ecuación 3</span><span><i class="dot ds"></i>Solución</span></div></div>
+<div class="canvas3d"><canvas id="c3d"></canvas></div>
+<div class="controls"><button class="btn gray" id="reset3d">Restablecer vista</button><span>Arrastra para rotar · rueda para zoom · doble clic para restablecer</span></div>
+</div>
+</div>
+
+<div class="section">
+<div class="title"><div class="num">9</div><h2>Conclusiones finales</h2></div>
+<div class="conclusion">
+<p><strong>1. Teoría de errores:</strong> Los errores absoluto, relativo y porcentual permiten medir cuánto se aleja un valor registrado de su valor de referencia. El error porcentual facilita comparar datos de diferente magnitud.</p>
+<p><strong>2. Series de Taylor:</strong> La aproximación mejora, en general, al aumentar el orden del polinomio cuando el punto evaluado se encuentra dentro de una zona adecuada respecto al punto de expansión.</p>
+<p><strong>3. Sistemas de ecuaciones:</strong> Jacobi y Gauss-Seidel son métodos iterativos que buscan la solución mediante aproximaciones sucesivas, mientras que LU es un método directo basado en la factorización de la matriz.</p>
+<p><strong>4. Integración:</strong> Una pequeña variación en un dato no siempre produce un cambio pequeño en el resultado. La sensibilidad depende de la función, de la aproximación utilizada y del condicionamiento del sistema.</p>
+<p><strong>5. Conclusión general:</strong> Los métodos numéricos permiten obtener soluciones útiles cuando los problemas no se resuelven de manera sencilla de forma analítica, pero es necesario analizar también el error y la estabilidad de los resultados para tomar decisiones confiables.</p>
+</div>
+</div>
+
+</div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const R={j:null,g:null,l:null};
+const V={yaw:-.72,pitch:.42,zoom:1};
+
+function fmt(v,d=6){
+ if(!Number.isFinite(v))return"No definido";
+ if(Math.abs(v)<1e-10)v=0;
+ return Number(v).toLocaleString("es-BO",{maximumFractionDigits:d});
+}
+function norm(v){return Math.sqrt(v.reduce((s,x)=>s+x*x,0))}
+function residual(A,b,x){return norm(A.map((r,i)=>r.reduce((s,a,j)=>s+a*x[j],0)-b[i]))}
+function factorial(n){let r=1;for(let i=2;i<=n;i++)r*=i;return r}
+
+function calcularErrores(){
+ const datos=[[12500,12420],[7800,7860],[4700,4560]];
+ let mayor=-1,nombre="";
+ datos.forEach((d,i)=>{
+  const ea=Math.abs(d[0]-d[1]),er=ea/Math.abs(d[0]),ep=er*100;
+  $("ea"+(i+1)).textContent=fmt(ea,2);
+  $("er"+(i+1)).textContent=er.toFixed(6);
+  $("ep"+(i+1)).textContent=ep.toFixed(4)+" %";
+  if(ep>mayor){mayor=ep;nombre=["Ingreso diario","Costo operativo","Utilidad estimada"][i]}
+ });
+ $("errorInterpretacion").innerHTML="El mayor error porcentual corresponde a <strong>"+nombre+"</strong>, con <strong>"+mayor.toFixed(4)+"%</strong>. Esto muestra que una diferencia relativamente pequeña en términos absolutos puede ser más significativa cuando se compara con el tamaño del valor de referencia.";
+}
+$("btnErrores").addEventListener("click",calcularErrores);
+
+function normalizarExpr(expr){
+ let s=expr.toLowerCase().replace(/\s+/g,"").replace(/π/g,"pi").replace(/sen/g,"sin").replace(/ln/g,"log").replace(/\^/g,"**");
+ return s;
+}
+function evaluar(expr,x){
+ const s=normalizarExpr(expr);
+ const env={x,pi:Math.PI,e:Math.E,exp:Math.exp,sin:Math.sin,cos:Math.cos,tan:Math.tan,asin:Math.asin,acos:Math.acos,atan:Math.atan,sqrt:Math.sqrt,abs:Math.abs,log:Math.log,log10:Math.log10,floor:Math.floor,ceil:Math.ceil,round:Math.round,pow:Math.pow};
+ try{return Function(...Object.keys(env),"return ("+s+");")(...Object.values(env))}
+ catch(e){throw new Error("Función no válida. Usa expresiones como exp(x), sin(x), cos(x), log(x), sqrt(x), x^2 o 1/(1+x).")}
+}
+function derivadaAnalitica(expr,k,a){
+ const s=normalizarExpr(expr);
+ if(k===0)return evaluar(expr,a);
+ if(/^exp\(x\)$/.test(s))return Math.exp(a);
+ if(/^sin\(x\)$/.test(s))return[Math.sin(a),Math.cos(a),-Math.sin(a),-Math.cos(a)][k%4];
+ if(/^cos\(x\)$/.test(s))return[Math.cos(a),-Math.sin(a),-Math.cos(a),Math.sin(a)][k%4];
+ if(/^log\(x\)$/.test(s))return((k-1)%2===0?1:-1)*factorial(k-1)/Math.pow(a,k);
+ return derivadaNumerica(expr,k,a);
+}
+function derivadaNumerica(expr,k,a,h){
+ if(k===0)return evaluar(expr,a);
+ h=h||Math.max(1e-4,Math.abs(a)*1e-4);
+ if(k===1)return(evaluar(expr,a+h)-evaluar(expr,a-h))/(2*h);
+ return(derivadaNumerica(expr,k-1,a+h,h)-derivadaNumerica(expr,k-1,a-h,h))/(2*h);
+}
+function taylorEn(expr,a,x,n){
+ let suma=0,filas=[];
+ for(let k=0;k<=n;k++){
+  const dv=derivadaAnalitica(expr,k,a),term=dv/factorial(k)*Math.pow(x-a,k);
+  suma+=term;filas.push({k,dv,term,suma});
+ }
+ return{suma,filas};
+}
+function polinomioEn(expr,a,x,n){return taylorEn(expr,a,x,n).suma}
+function taylorFormulaTexto(expr,a,n){
+ let partes=[];
+ for(let k=0;k<=n;k++){
+  const dv=derivadaAnalitica(expr,k,a),coef=dv/factorial(k);
+  let c=coef.toFixed(8).replace(/\.?0+$/,"");
+  if(k===0)partes.push(c);
+  else partes.push((coef>=0?"+":"−")+" "+Math.abs(coef).toFixed(8).replace(/\.?0+$/,"")+"(x − "+a+")"+(k===1?"":"^"+k));
+ }
+ return"P"+n+"(x) = "+partes.join(" ");
+}
+function resolverTaylor(){
+ try{
+  const expr=$("func").value.trim(),a=Number($("ta").value),x=Number($("tx").value);
+  let n=Math.trunc(Number($("tn").value));
+  if(!expr||!Number.isFinite(a)||!Number.isFinite(x)||!Number.isFinite(n)||n<0)throw new Error("Verifica los datos de Taylor.");
+  n=Math.min(n,15);$("tn").value=n;
+  const exact=evaluar(expr,x);
+  if(!Number.isFinite(exact))throw new Error("La función no está definida en el punto x.");
+  const res=taylorEn(expr,a,x,n),aprox=res.suma,ea=Math.abs(exact-aprox),er=Math.abs(exact)===0?0:ea/Math.abs(exact),ep=er*100;
+  $("taylorFormula").textContent=taylorFormulaTexto(expr,a,n);
+  $("texacto").textContent=fmt(exact,10);$("taprox").textContent=fmt(aprox,10);
+  $("terrorAbs").textContent=fmt(ea,10);$("terrorRel").textContent=er.toExponential(6);$("terror").textContent=ep.toFixed(8)+" %";$("tterminos").textContent=n+1;
+  $("ttabla").innerHTML=res.filas.map(f=>"<tr><td>"+f.k+"</td><td>"+fmt(f.dv,10)+"</td><td>"+fmt(f.term,10)+"</td><td>"+fmt(f.suma,10)+"</td></tr>").join("");
+  $("tinterpretacion").innerHTML="Para <strong>x = "+x+"</strong>, el valor exacto es <strong>"+fmt(exact,10)+"</strong>. Con Taylor de orden <strong>"+n+"</strong> se obtiene <strong>"+fmt(aprox,10)+"</strong>. El error absoluto es <strong>"+fmt(ea,10)+"</strong> y el error porcentual es <strong>"+ep.toFixed(8)+"%</strong>. La aproximación se construye alrededor de <strong>a = "+a+"</strong>.";
+  dibujarTaylor(expr,a,x,n);
+ }catch(e){alert(e.message)}
+}
+function ejemploTaylor(f,a,x,n){$("func").value=f;$("ta").value=a;$("tx").value=x;$("tn").value=n;resolverTaylor()}
+$("btnTaylor").addEventListener("click",resolverTaylor);
+$("btnTaylorReset").addEventListener("click",()=>ejemploTaylor("exp(x)",0,.4,5));
+document.querySelectorAll(".examples button").forEach(b=>b.addEventListener("click",()=>ejemploTaylor(b.dataset.f,Number(b.dataset.a),Number(b.dataset.x),Number(b.dataset.n))));
+
+function dibujarTaylor(expr,a,xp,n){
+ const c=$("taylorCanvas"),box=c.parentElement,w=box.clientWidth,h=box.clientHeight,d=window.devicePixelRatio||1;
+ c.width=Math.max(1,w*d);c.height=Math.max(1,h*d);
+ const ctx=c.getContext("2d");ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);
+ let xmin=Math.min(a,xp)-1.5,xmax=Math.max(a,xp)+1.5;
+ const N=320,fun=[],pol=[];
+ for(let i=0;i<=N;i++){
+  const xx=xmin+(xmax-xmin)*i/N;
+  try{const yy=evaluar(expr,xx),pp=polinomioEn(expr,a,xx,n);if(Number.isFinite(yy)&&Number.isFinite(pp)&&Math.abs(yy)<1e6&&Math.abs(pp)<1e6){fun.push([xx,yy]);pol.push([xx,pp])}}catch(e){}
+ }
+ if(fun.length<2){ctx.fillStyle="#475569";ctx.font="16px Arial";ctx.fillText("No hay suficientes valores para graficar.",20,30);return}
+ const vals=fun.map(p=>p[1]).concat(pol.map(p=>p[1]));let ymin=Math.min(...vals),ymax=Math.max(...vals),range=ymax-ymin;if(!Number.isFinite(range)||range===0)range=1;
+ const pad=range*.12;ymin-=pad;ymax+=pad;
+ const X=v=>45+(v-xmin)/(xmax-xmin)*(w-62),Y=v=>h-35-(v-ymin)/(ymax-ymin)*(h-55);
+ ctx.strokeStyle="#e2e8f0";ctx.lineWidth=1;
+ for(let i=0;i<6;i++){const yy=20+i*(h-55)/5;ctx.beginPath();ctx.moveTo(45,yy);ctx.lineTo(w-17,yy);ctx.stroke()}
+ ctx.strokeStyle="#94a3b8";ctx.beginPath();ctx.moveTo(45,Y(0));ctx.lineTo(w-17,Y(0));ctx.stroke();
+ ctx.strokeStyle="#94a3b8";ctx.beginPath();ctx.moveTo(X(0),20);ctx.lineTo(X(0),h-35);ctx.stroke();
+ function linea(datos,color,lw){ctx.strokeStyle=color;ctx.lineWidth=lw;ctx.beginPath();datos.forEach((p,i)=>{const xx=X(p[0]),yy=Y(p[1]);i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy)});ctx.stroke()}
+ linea(fun,"#2563eb",2.6);linea(pol,"#059669",2.6);
+ try{
+  const ya=evaluar(expr,a);if(Number.isFinite(ya)){ctx.fillStyle="#f59e0b";ctx.beginPath();ctx.arc(X(a),Y(ya),6,0,Math.PI*2);ctx.fill()}
+  const ye=evaluar(expr,xp);if(Number.isFinite(ye)){ctx.fillStyle="#dc2626";ctx.beginPath();ctx.arc(X(xp),Y(ye),6,0,Math.PI*2);ctx.fill()}
+ }catch(e){}
+}
+
+function num(id){const v=parseFloat($(id).value);if(!Number.isFinite(v))throw new Error("Todos los datos del sistema deben ser números válidos.");return v}
+function data(){return{A:[[num("a11"),num("a12"),num("a13")],[num("a21"),num("a22"),num("a23")],[num("a31"),num("a32"),num("a33")]],b:[num("b1"),num("b2"),num("b3")]}}
+function updateEq(){
+ try{const d=data();$("eqs").innerHTML=d.A.map((r,i)=>r[0].toFixed(3)+"x₁ "+(r[1]>=0?"+":"−")+" "+Math.abs(r[1]).toFixed(3)+"x₂ "+(r[2]>=0?"+":"−")+" "+Math.abs(r[2]).toFixed(3)+"x₃ = "+d.b[i].toFixed(3)).join("<br>")}
+ catch(e){$("eqs").textContent="Completa los datos."}
+}
+function jacobi(A,b,t=1e-8,m=100){
+ let x=[0,0,0],errors=[],st=performance.now();
+ for(let k=1;k<=m;k++){
+  const y=[0,0,0];
+  for(let i=0;i<3;i++){if(Math.abs(A[i][i])<1e-14)throw new Error("Jacobi no puede dividir entre cero en la diagonal.");let s=b[i];for(let j=0;j<3;j++)if(j!==i)s-=A[i][j]*x[j];y[i]=s/A[i][i]}
+  const e=norm(y.map((v,i)=>v-x[i]));errors.push(Math.max(e,1e-16));x=y;
+  if(e<t)return{x,errors,iter:k,time:performance.now()-st,error:e}
+ }
+ throw new Error("Jacobi no convergió en 100 iteraciones. Revisa el sistema.")
+}
+function gaussSeidel(A,b,t=1e-8,m=100){
+ let x=[0,0,0],errors=[],st=performance.now();
+ for(let k=1;k<=m;k++){
+  const old=x.slice();
+  for(let i=0;i<3;i++){if(Math.abs(A[i][i])<1e-14)throw new Error("Gauss-Seidel no puede dividir entre cero en la diagonal.");let s=b[i];for(let j=0;j<i;j++)s-=A[i][j]*x[j];for(let j=i+1;j<3;j++)s-=A[i][j]*old[j];x[i]=s/A[i][i]}
+  const e=norm(x.map((v,i)=>v-old[i]));errors.push(Math.max(e,1e-16));if(e<t)return{x,errors,iter:k,time:performance.now()-st,error:e}
+ }
+ throw new Error("Gauss-Seidel no convergió en 100 iteraciones. Revisa el sistema.")
+}
+function LUsolve(A,b){
+ let M=A.map(r=>r.slice()),L=[[1,0,0],[0,1,0],[0,0,1]],P=[[1,0,0],[0,1,0],[0,0,1]],ops=0,st=performance.now();
+ for(let k=0;k<2;k++){
+  let p=k;for(let i=k+1;i<3;i++)if(Math.abs(M[i][k])>Math.abs(M[p][k]))p=i;
+  if(Math.abs(M[p][k])<1e-14)throw new Error("La matriz es singular y no puede resolverse por LU.");
+  if(p!==k){[M[p],M[k]]=[M[k],M[p]];[P[p],P[k]]=[P[k],P[p]];for(let j=0;j<k;j++) [L[p][j],L[k][j]]=[L[k][j],L[p][j]]}
+  for(let i=k+1;i<3;i++){L[i][k]=M[i][k]/M[k][k];ops++;for(let j=k;j<3;j++){M[i][j]-=L[i][k]*M[k][j];ops++}}
+ }
+ const U=M.map(r=>r.slice()),pb=P.map(r=>r.reduce((s,a,j)=>s+a*b[j],0)),y=[0,0,0],x=[0,0,0];
+ for(let i=0;i<3;i++){let s=pb[i];for(let j=0;j<i;j++)s-=L[i][j]*y[j];y[i]=s/L[i][i]}
+ for(let i=2;i>=0;i--){let s=y[i];for(let j=i+1;j<3;j++)s-=U[i][j]*x[j];if(Math.abs(U[i][i])<1e-14)throw new Error("La matriz es singular.");x[i]=s/U[i][i]}
+ return{x,L,U,P,ops,error:residual(A,b,x),time:performance.now()-st}
+}
+function clearSysError(){$("sysError").style.display="none"}
+function showSysError(msg){$("sysError").textContent=msg;$("sysError").style.display="block"}
+function matrix(M){return M.map(r=>r.map(v=>Math.abs(v)<1e-10?"0":v.toFixed(6)).join("   ")).join("\n")}
+function renderSystems(){
+ if(R.j){$("ji").textContent=R.j.iter;$("je").textContent=R.j.error.toExponential(2);$("jt").textContent=R.j.time.toFixed(3)+" ms";$("jx1").textContent=R.j.x[0].toFixed(6);$("jx2").textContent=R.j.x[1].toFixed(6);$("jx3").textContent=R.j.x[2].toFixed(6);draw2d("cj",R.j.errors,"Jacobi")}
+ if(R.g){$("gi").textContent=R.g.iter;$("ge").textContent=R.g.error.toExponential(2);$("gt").textContent=R.g.time.toFixed(3)+" ms";$("gx1").textContent=R.g.x[0].toFixed(6);$("gx2").textContent=R.g.x[1].toFixed(6);$("gx3").textContent=R.g.x[2].toFixed(6);draw2d("cg",R.g.errors,"Gauss-Seidel")}
+ if(R.l){$("lo").textContent=R.l.ops;$("le").textContent=R.l.error.toExponential(2);$("lt").textContent=R.l.time.toFixed(3)+" ms";$("lx1").textContent=R.l.x[0].toFixed(6);$("lx2").textContent=R.l.x[1].toFixed(6);$("lx3").textContent=R.l.x[2].toFixed(6);$("pm").textContent=matrix(R.l.P);$("lm").textContent=matrix(R.l.L);$("um").textContent=matrix(R.l.U)}
+ if(R.j&&R.g&&R.l){$("c1").textContent=R.j.iter;$("c2").textContent=R.g.iter;$("c3").textContent=R.l.ops;$("c4").textContent=R.j.error.toExponential(2);$("c5").textContent=R.g.error.toExponential(2);$("c6").textContent=R.l.error.toExponential(2);draw3d()}
+}
+function solveJ(){clearSysError();try{const d=data();R.j=jacobi(d.A,d.b);renderSystems();setTab("j")}catch(e){showSysError(e.message)}}
+function solveG(){clearSysError();try{const d=data();R.g=gaussSeidel(d.A,d.b);renderSystems();setTab("g")}catch(e){showSysError(e.message)}}
+function solveL(){clearSysError();try{const d=data();R.l=LUsolve(d.A,d.b);renderSystems();setTab("l")}catch(e){showSysError(e.message)}}
+function solveAll(){clearSysError();try{const d=data();R.j=jacobi(d.A,d.b);R.g=gaussSeidel(d.A,d.b);R.l=LUsolve(d.A,d.b);renderSystems();setTab("c")}catch(e){showSysError(e.message)}}
+function setTab(k){
+ ["j","g","l","c"].forEach(x=>{$("v"+x).classList.toggle("hidden",x!==k);$("t"+x).classList.toggle("active",x===k)});
+ setTimeout(()=>{if(k==="j"&&R.j)draw2d("cj",R.j.errors,"Jacobi");if(k==="g"&&R.g)draw2d("cg",R.g.errors,"Gauss-Seidel");if(R.j&&R.g&&R.l)draw3d()},30)
+}
+["j","g","l","c"].forEach(k=>$("t"+k).addEventListener("click",()=>setTab(k)));
+$("btnAll").addEventListener("click",solveAll);$("btnJ").addEventListener("click",solveJ);$("btnG").addEventListener("click",solveG);$("btnL").addEventListener("click",solveL);
+function resetData(){const vals={a11:4,a12:-.5,a13:-.5,a21:-.5,a22:3,a23:-.3,a31:-.5,a32:-.3,a33:4,b1:8,b2:6,b3:10};Object.entries(vals).forEach(([id,v])=>$(id).value=v);updateEq();solveAll()}
+$("btnReset").addEventListener("click",resetData);
+document.querySelectorAll(".matrix input,.vector input").forEach(i=>i.addEventListener("input",updateEq));
+
+function draw2d(id,arr,label){
+ const c=$(id);if(!c)return;const box=c.parentElement,w=box.clientWidth,h=285,d=window.devicePixelRatio||1;
+ c.width=Math.max(1,w*d);c.height=h*d;const ctx=c.getContext("2d");ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);
+ const p={l:52,r:18,t:28,b:38},data=arr.slice(0,50),logs=data.map(v=>Math.log10(Math.max(v,1e-16))),mx=Math.max(...logs),mn=Math.min(...logs),range=Math.max(mx-mn,1);
+ ctx.strokeStyle="#cbd5e1";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(p.l,p.t);ctx.lineTo(p.l,h-p.b);ctx.lineTo(w-p.r,h-p.b);ctx.stroke();
+ ctx.beginPath();data.forEach((v,i)=>{const xx=p.l+(w-p.l-p.r)*i/Math.max(1,data.length-1),yy=p.t+(mx-Math.log10(Math.max(v,1e-16)))/range*(h-p.t-p.b);i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy)});ctx.strokeStyle="#2563eb";ctx.lineWidth=2;ctx.stroke();
+ ctx.fillStyle="#475569";ctx.font="11px Segoe UI";ctx.fillText(label,p.l,p.t-8);ctx.fillText("Iteración",w-70,h-10);ctx.save();ctx.translate(14,h/2);ctx.rotate(-Math.PI/2);ctx.fillText("log(error)",0,0);ctx.restore();
+}
+function draw3d(){
+ const c=$("c3d");if(!c||!R.l)return;const box=c.parentElement,w=box.clientWidth,h=box.clientHeight||500,d=window.devicePixelRatio||1;
+ c.width=Math.max(1,w*d);c.height=Math.max(1,h*d);const ctx=c.getContext("2d");ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);
+ const A=data().A,b=data().b,x=R.l.x,cx=w/2,cy=h/2+20,sc=Math.min(w,h)*.22;
+ const P=q=>{let X=q[0]*V.zoom,Y=q[1]*V.zoom,Z=q[2]*V.zoom,co=Math.cos(V.yaw),si=Math.sin(V.yaw),cp=Math.cos(V.pitch),sp=Math.sin(V.pitch),xx=X*co-Z*si,zz=X*si+Z*co,yy=Y*cp-zz*sp,zz2=Y*sp+zz*cp;return[cx+xx*sc,cy-yy*sc,zz2]};
+ const line=(a,z,col="#d6dee8",lw=1)=>{const u=P(a),v=P(z);ctx.beginPath();ctx.moveTo(u[0],u[1]);ctx.lineTo(v[0],v[1]);ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.stroke()};
+ for(let i=-8;i<=8;i++){line([i,-1.5,-8],[i,-1.5,8]);line([-8,-1.5,i],[8,-1.5,i])}
+ line([-8,0,0],[8,0,0],"#475569",2);line([0,-2,0],[0,8,0],"#475569",2);line([0,0,-8],[0,0,8],"#475569",2);
+ ctx.fillStyle="#334155";ctx.font="bold 12px Segoe UI";let ax=P([8,0,0]),ay=P([0,8,0]),az=P([0,0,8]);ctx.fillText("x₁",ax[0]+5,ax[1]);ctx.fillText("x₂",ay[0]+5,ay[1]);ctx.fillText("x₃",az[0]+5,az[1]);
+ const colors=["#2563eb","#059669","#ea580c"],polys=[],N=17,mi=-4,ma=7;
+ for(let k=0;k<3;k++){
+  const aa=A[k],bb=b[k],M=new Map(),mode=Math.abs(aa[2])>1e-9?"z":Math.abs(aa[1])>1e-9?"y":"x";
+  for(let iy=0;iy<N;iy++)for(let ix=0;ix<N;ix++){const u=mi+(ma-mi)*ix/(N-1),v=mi+(ma-mi)*iy/(N-1);let q;if(mode==="z")q=[u,v,(bb-aa[0]*u-aa[1]*v)/aa[2]];else if(mode==="y")q=[u,(bb-aa[0]*u-aa[2]*v)/aa[1],v];else q=[(bb-aa[1]*u-aa[2]*v)/aa[0],u,v];if(q.every(z=>Number.isFinite(z)&&z>=-8&&z<=8))M.set(ix+","+iy,q)}
+  for(let iy=0;iy<N-1;iy++)for(let ix=0;ix<N-1;ix++){const q=M.get(ix+","+iy),q1=M.get((ix+1)+","+iy),q2=M.get((ix+1)+","+(iy+1)),q3=M.get(ix+","+(iy+1));if(q&&q1&&q2&&q3)polys.push({k,dep:[P(q),P(q1),P(q2),P(q3)].reduce((s,z)=>s+z[2],0)/4,pp:[P(q),P(q1),P(q2),P(q3)]})}
+ }
+ polys.sort((a,z)=>a.dep-z.dep).forEach(o=>{ctx.beginPath();ctx.moveTo(o.pp[0][0],o.pp[0][1]);o.pp.slice(1).forEach(q=>ctx.lineTo(q[0],q[1]));ctx.closePath();ctx.fillStyle=colors[o.k];ctx.globalAlpha=.14;ctx.fill();ctx.globalAlpha=.62;ctx.strokeStyle=colors[o.k];ctx.lineWidth=.7;ctx.stroke();ctx.globalAlpha=1});
+ const s=P(x);ctx.beginPath();ctx.arc(s[0],s[1],7,0,Math.PI*2);ctx.fillStyle="#7c3aed";ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#4c1d95";ctx.font="bold 12px Segoe UI";ctx.fillText("Solución ("+x.map(z=>z.toFixed(2)).join(", ")+")",s[0]+10,s[1]-9);
+}
+function reset3d(){V.yaw=-.72;V.pitch=.42;V.zoom=1;draw3d()}
+$("reset3d").addEventListener("click",reset3d);
+(()=>{const c=$("c3d");let down=false,lx=0,ly=0;c.addEventListener("pointerdown",e=>{down=true;lx=e.clientX;ly=e.clientY;c.setPointerCapture(e.pointerId);c.style.cursor="grabbing"});c.addEventListener("pointermove",e=>{if(!down)return;V.yaw+=(e.clientX-lx)*.009;V.pitch+=(e.clientY-ly)*.009;V.pitch=Math.max(-1.3,Math.min(1.3,V.pitch));lx=e.clientX;ly=e.clientY;draw3d()});c.addEventListener("pointerup",()=>{down=false;c.style.cursor="grab"});c.addEventListener("wheel",e=>{e.preventDefault();V.zoom*=e.deltaY<0?1.08:.93;V.zoom=Math.max(.45,Math.min(2.2,V.zoom));draw3d()},{passive:false});c.addEventListener("dblclick",reset3d)})();
+
+window.addEventListener("resize",()=>{try{resolverTaylor()}catch(e){}try{renderSystems()}catch(e){}});
+calcularErrores();updateEq();resolverTaylor();solveAll();
+</script>
+</body>
+</html>
